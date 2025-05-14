@@ -1,0 +1,100 @@
+body{font-family:system-ui;max-width:680px;margin:auto;padding:1rem;}
+h1{color:#3a6;}
+#controls button{margin:.4rem;padding:.6rem 1rem;font-size:1rem;}
+.note{color:#555;}
+
+/* --- 评分进度条 --- */
+#barOuter{
+    width:260px;height:20px;border:1px solid #ccc;border-radius:10px;margin:8px 0;
+  }
+  #barInner{
+    height:100%;width:0;border-radius:10px;background:#3a6;transition:width 0.4s;
+  }
+  #scoreText{font-size:1.2rem;margin:4px 0 8px 0;color:#333}
+  
+  /* 新按钮外观可沿用默认按钮，也可自定义 */
+  
+  /* ========== 主题变量 ========= */
+:root{
+    --primary: #2ecc71;         /* 亮绿 */
+    --primary-dark: #28b463;    /* 深绿 */
+    --bg: #f8fff9;              /* 浅背景 */
+    --text: #222;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,.08);
+    --ease-bounce: cubic-bezier(.34,1.56,.64,1); /* 弹性曲线 */
+    --ease-smooth: cubic-bezier(.25,.8,.5,1);
+  }
+  
+  html,body{
+    margin:0;padding:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);
+    display:flex;flex-direction:column;align-items:center;
+  }
+  
+  /* 卡片容器 */
+  .card{
+    background:#fff;box-shadow:var(--shadow);
+    border-radius:var(--radius);
+    padding:2rem 3rem;margin-top:3rem;min-width:320px;
+    animation:fadeIn .6s ease;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  
+  h1{color:var(--primary-dark);margin-top:0}
+  
+  /* 任务文字 */
+  #task p{font-size:1.1rem;margin:.4rem 0}
+  
+  /* 按钮 */
+  button{
+    margin:.5rem;padding:.6rem 1.4rem;font-size:1rem;
+    border:none;border-radius:var(--radius);
+    background:var(--primary);color:#fff;cursor:pointer;
+    transition:transform .2s var(--ease-bounce),filter .3s;
+  }
+  button:disabled{background:#ddd;cursor:default;color:#777}
+  button:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-2px)}
+  button:not(:disabled):active{transform:scale(.96)}
+  
+  /* 分数条 */
+  #barOuter{
+    width:260px;height:22px;border:1px solid #ccc;
+    border-radius:var(--radius);margin:12px 0;background:#eee
+  }
+  #barInner{
+    height:100%;width:0;border-radius:var(--radius);
+    background:var(--primary-dark);
+    transition:width .6s var(--ease-bounce);
+  }
+  
+  /* 分数文本弹跳 */
+  .score-pop{animation:pop .6s var(--ease-bounce)}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}
+  60%{transform:scale(1.15);opacity:1}
+  100%{transform:scale(1);opacity:1}}
+  
+  footer{margin:3rem 0;font-size:.85rem;color:#666}
+
+/* 保证按钮组同宽居中 */
+.btn-group{display:flex;gap:1rem;justify-content:center;margin-top:1rem}
+
+/* 淡入 / 淡出关键帧 */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+
+.fade-in {animation:fadeIn .35s forwards}
+.fade-out{animation:fadeOut .35s forwards}
+
+/* 隐藏的按钮组完全不占位 */
+.btn-group[hidden]{display:none!important}
+
+  /* -------- transform + opacity 动画 -------- */
+@keyframes slideFadeIn  {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes slideFadeOut {from{opacity:1;transform:none}to{opacity:0;transform:translateY(20px)}}
+
+.t-in  {animation:slideFadeIn  .35s var(--ease-smooth) forwards}
+.t-out {animation:slideFadeOut .35s var(--ease-smooth) forwards}
+
+/* 隐藏的按钮组完全不占位 */
+.btn-group[hidden]{display:none!important}

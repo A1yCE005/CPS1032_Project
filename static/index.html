@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<title>自闭症口语练习</title>
+<link rel="stylesheet" href="style.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/js-levenshtein@1.1.6/index.min.js"></script>
+<script defer src="script.js"></script>
+</head>
+<body>
+  <div class="card">
+    <h1>口语练习</h1>
+
+    <section id="task">
+      <p>请朗读： <span id="word"></span></p>
+      <p class="note" id="definition"></p>
+    </section>
+
+    <!-- 录音阶段按钮 -->
+    <div id="recGroup"   class="btn-group">
+      <button id="startBtn">开始录音</button>
+      <button id="stopBtn"  disabled>停止并评分</button>
+    </div>
+
+    <!-- 结果展示 + 下一步按钮 -->
+    <section id="result" hidden>
+      <div id="barOuter"><div id="barInner"></div></div>
+      <p id="scoreText"></p>
+    </section>
+
+    <div id="postGroup" class="btn-group" hidden>
+        <button id="retryBtn">再来一次</button>
+        <button id="nextBtn">下一题</button>
+    </div>
+      
+
+  <footer>本地离线运行，无需互联网。</footer>
+</body>
+</html>
