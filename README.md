@@ -2,7 +2,7 @@
 
 This is the final project for CPS 1032*W01 in Wenzhou-Kean University, especially for specific situation, **not allowed for commercial usage**.
 
-###Initialize
+### Initialize
 After `git clone` this repo:
 
 ```powershell
@@ -14,7 +14,7 @@ pip install -r requirements.txt
 ```
 
 
-###Start
+### Start
 To start this project, simply:
 
 ```powershell
