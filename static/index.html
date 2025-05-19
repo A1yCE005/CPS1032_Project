@@ -2,10 +2,11 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>自闭症口语练习</title>
-<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="/static/style.css"/>
 <script defer src="https://cdn.jsdelivr.net/npm/js-levenshtein@1.1.6/index.min.js"></script>
-<script defer src="script.js"></script>
+<script type="module" defer src="/static/script.js"></script>
 </head>
 <body>
   <div class="card">
@@ -18,8 +19,8 @@
 
     <!-- 录音阶段按钮 -->
     <div id="recGroup"   class="btn-group">
-      <button id="startBtn">开始录音</button>
-      <button id="stopBtn"  disabled>停止并评分</button>
+      <button id="startBtn" aria-label="开始录音">开始录音</button>
+      <button id="stopBtn" aria-label="停止并评分" disabled>停止并评分</button>
     </div>
 
     <!-- 结果展示 + 下一步按钮 -->
@@ -29,10 +30,10 @@
     </section>
 
     <div id="postGroup" class="btn-group" hidden>
-        <button id="retryBtn">再来一次</button>
-        <button id="nextBtn">下一题</button>
+        <button id="retryBtn" aria-label="再来一次">再来一次</button>
+        <button id="nextBtn" aria-label="下一题">下一题</button>
     </div>
-      
+    </div>   <!-- close .card -->
 
   <footer>本地离线运行，无需互联网。</footer>
 </body>
