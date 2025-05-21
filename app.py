@@ -1,6 +1,8 @@
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
+from flask import Flask, request, jsonify, send_from_directory
+
 import wave, json, os, tempfile
 from pydub import AudioSegment  
 from rapidfuzz import fuzz
@@ -64,6 +66,41 @@ def api_score():
 @app.route('/<path:filename>')
 def serve_static(filename):
     return send_from_directory(app.static_folder, filename)
+
+@app.route("/api/words/<int:grade>", methods=["GET"])
+def words_by_grade(grade):
+    """
+    Serve the word list for the given grade (1-8).
+    Expects static JSON files named words_grade1.json ... words_grade8.json in the static folder.
+    """
+    try:
+        filepath = os.path.join(app.static_folder, f"words_grade{grade}.json")
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify(data)
+    except Exception:
+        # Return empty list on error
+        return jsonify([])
+
+@app.route("/api/random_word", methods=["GET"])
+def random_word():
+    # Default to grade 1 if not specified
+    grade = int(request.args.get("grade", 1))
+    # Load corresponding JSON
+    try:
+        filepath = os.path.join(app.static_folder, f"words_grade{grade}.json")
+        with open(filepath, "r", encoding="utf-8") as f:
+            words = json.load(f)
+    except Exception:
+        words = []
+    if not words:
+        return jsonify({})
+    import random
+    word_entry = random.choice(words)
+    # If word_entry is a raw string, wrap into dict
+    if isinstance(word_entry, str):
+        word_entry = {"word": word_entry}
+    return jsonify(word_entry)
 
 if __name__ == "__main__":
     app.run(debug=True)

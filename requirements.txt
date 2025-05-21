@@ -1,25 +1,21 @@
-# ------------------ requirements.txt ------------------
-# ① 使用官方 CUDA 12.1 轮子；pip 会到下方 extra-index 拉 GPU 版。
-#    若想 CPU 版或 CUDA 11.8，只需把 cu121 换成 cpu / cu118。
---extra-index-url https://download.pytorch.org/whl/cu121
-
+# ------------------ requirements.txt (CPU 版) ------------------
+# Flask Web 框架
 Flask==3.0.3
 
-# Whisper 推理（比 PyPI whisper 省显存且更快）
+# Whisper 推理 (faster-whisper)
 faster-whisper==0.10.0
 
-# PyTorch 2.2.2 + 对应 torchvision / torchaudio
-torch==2.2.2+cu121
-torchvision==0.17.2+cu121
-torchaudio==2.2.2+cu121
+# PyTorch CPU 版
+torch==2.2.2
+torchvision==0.17.2
+torchaudio==2.2.2
 
-# 音频解码（转 WebM → WAV 用）
+# 音频解码 (WebM → WAV)
 pydub==0.25.1
-soundfile==0.12.1     # pydub 依赖
+soundfile==0.12.1
 
-# 汉字转拼音 & 简易文本距离
+# 汉字转拼音 & 相似度计算
 pypinyin==0.48.0
-python-Levenshtein==0.24.0
-# ------------------------------------------------------
-
 rapidfuzz==3.6.1
+python-Levenshtein==0.24.0
+# ------------------------------------------------------------
