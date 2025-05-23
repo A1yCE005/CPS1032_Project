@@ -1,12 +1,15 @@
 import os
+import json
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 from flask import Flask, request, jsonify, send_from_directory
 
-import wave, json, os, tempfile
+import wave, tempfile
 from pydub import AudioSegment  
 from rapidfuzz import fuzz
 from faster_whisper import WhisperModel
+import subprocess
+import sys
 # 使用 CPU 版 base-int8，适合无独显的教室电脑 (≈500 MB，内存占用 <1.5 GB)
 WHISPER = WhisperModel(
     "base",               # 500 MB 权重
@@ -15,6 +18,8 @@ WHISPER = WhisperModel(
 )
 
 app = Flask(__name__, static_folder="static")
+
+
 sample_rate = 16000
 
 @app.route("/")
@@ -71,16 +76,45 @@ def serve_static(filename):
 def words_by_grade(grade):
     """
     Serve the word list for the given grade (1-8).
-    Expects static JSON files named words_grade1.json ... words_grade8.json in the static folder.
+    Normalize entries so each is an object with a 'word' field.
     """
     try:
         filepath = os.path.join(app.static_folder, f"words_grade{grade}.json")
         with open(filepath, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return jsonify(data)
+            raw = json.load(f)
+        normalized = []
+        for item in raw:
+            if isinstance(item, str):
+                normalized.append({"word": item})
+            elif isinstance(item, dict) and "word" in item:
+                normalized.append(item)
+        return jsonify(normalized)
     except Exception:
         # Return empty list on error
         return jsonify([])
+
+
+# --- POST handler for updating grade words ---
+@app.route("/api/words/<int:grade>", methods=["POST"])
+def update_words(grade):
+    """
+    Update the word list JSON for the given grade.
+    """
+    try:
+        # Parse JSON body as list of word entries
+        data = request.get_json(force=True) or []
+        filepath = os.path.join(app.static_folder, f"words_grade{grade}.json")
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        # After saving new word list, regenerate audio for this grade
+        try:
+            subprocess.run([sys.executable, os.path.join(app.static_folder, "gen_audio.py")], check=False)
+        except Exception as e:
+            # Log but do not fail the API if audio generation fails
+            print(f"[Warning] Audio generation failed: {e}")
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/api/random_word", methods=["GET"])
 def random_word():
@@ -103,4 +137,10 @@ def random_word():
     return jsonify(word_entry)
 
 if __name__ == "__main__":
+    # Generate missing audio before startup
+    try:
+        script_path = os.path.join(app.static_folder, "gen_audio.py")
+        subprocess.run([sys.executable, script_path], check=False)
+    except Exception as e:
+        print(f"[Warning] Initial audio generation failed: {e}")
     app.run(debug=True)

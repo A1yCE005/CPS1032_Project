@@ -74,7 +74,7 @@ h1{color:#3a6;}
   60%{transform:scale(1.15);opacity:1}
   100%{transform:scale(1);opacity:1}}
   
-  footer{margin:3rem 0;font-size:.85rem;color:#666}
+  footer{margin:1.5rem 0;font-size:.85rem;color:#666}
 
 /* 保证按钮组同宽居中 */
 .btn-group{display:flex;gap:1rem;justify-content:center;margin-top:1rem}
@@ -87,7 +87,86 @@ h1{color:#3a6;}
 .fade-out{animation:fadeOut .35s forwards}
 
 /* 隐藏的按钮组完全不占位 */
+
 .btn-group[hidden]{display:none!important}
+
+/* ========== 强制覆盖 播放发音 链接样式 ========= */
+a#playBtn.link-button {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-left: 0.5rem !important;
+  font-size: 0.9rem !important;
+  color: var(--primary-dark) !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  vertical-align: middle !important;
+}
+a#playBtn.link-button:hover {
+  color: var(--primary) !important;
+  text-decoration: underline !important;
+}
+
+
+/* ========== 播放发音 按钮样式 ========== */
+#playBtn {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  background: rgba(47, 185, 126, 0.1);
+  color: var(--primary-dark);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  vertical-align: middle;
+}
+#playBtn:hover {
+  background: var(--primary);
+  color: #fff;
+}
+#playBtn:active {
+  transform: scale(0.95);
+}
+
+
+/* -------- 管理词库 链接样式 -------- */
+#manageGroup {
+  margin-top: 0.5rem;
+  text-align: center;
+}
+.link-button {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 1rem !important;
+  color: var(--primary-dark) !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+}
+.link-button:hover {
+  color: var(--primary) !important;
+}
+
+
+/* 次要按钮样式 (如 管理词库) */
+.btn-secondary {
+  padding: .6rem 1.4rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.btn-secondary:active {
+  background: rgba(0, 0, 0, 10%);
+}
 
   /* -------- transform + opacity 动画 -------- */
 @keyframes slideFadeIn  {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}

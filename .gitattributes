@@ -1,12 +1,13 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Exclude Python virtual environment
+.venv/** export-ignore
 
-# Enforce LF for key text file types
+# Exclude generated audio files from archives and treat them as binary
+static/audio/** export-ignore
+static/audio/** binary
+
+# Normalize text file EOL
 *.py    text eol=lf
 *.html  text eol=lf
 *.css   text eol=lf
 *.js    text eol=lf
 *.json  text eol=lf
-
-# Exclude Python virtual environment from generated archives
-.venv/** export-ignore

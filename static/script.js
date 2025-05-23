@@ -9,6 +9,7 @@ const barInner    = document.getElementById("barInner");
 const scoreTxt    = document.getElementById("scoreText");
 const gradeSelect = document.getElementById("gradeSelect");
 const pronounceBtn= document.getElementById("pronounceBtn");
+const manageBtn   = document.getElementById("manageBtn");
 
 let mediaRecorder, chunks = [], currentWord = {};
 
@@ -34,3 +35,24 @@ initWord();
 if (gradeSelect) gradeSelect.onchange = initWord;
 
 // 录音、评分、动画、再来一次、下一题、发音... (省略，功能已就绪)
+
+// 管理词库
+if (manageBtn) {
+  manageBtn.onclick = () => {
+    window.location.href = "/static/manage.html";
+  };
+}
+
+// 本地音频发音
+if (pronounceBtn) {
+  pronounceBtn.onclick = () => {
+    const grade = gradeSelect ? gradeSelect.value : "1";
+    const word = currentWord.word || "";
+    const safe = encodeURIComponent(word);
+    const audio = new Audio(`/static/audio/grade${grade}/${safe}.mp3`);
+    audio.play().catch(err => {
+      console.error("播放本地音频失败，可能文件不存在：", err);
+      alert("音频文件未找到或播放失败");
+    });
+  };
+}

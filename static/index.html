@@ -27,7 +27,9 @@
     </section>
 
     <section id="task">
-      <p>请朗读： <span id="word"></span></p>
+      <p>请朗读： <span id="word"></span>
+        <a id="playBtn" class="link-button" href="#" aria-label="播放发音">🔉 播放</a>
+      </p>
       <p class="note" id="definition"></p>
     </section>
 
@@ -39,7 +41,6 @@
     <section id="result" hidden>
       <div id="barOuter"><div id="barInner"></div></div>
       <p id="scoreText"></p>
-      <button id="pronounceBtn" aria-label="发音">🔊 发音</button>
     </section>
 
     <div id="postGroup" class="btn-group" hidden>
@@ -47,6 +48,11 @@
       <button id="nextBtn" aria-label="下一题">下一题</button>
     </div>
   </div> <!-- .card end -->
+
+  <!-- 词库管理链接 -->
+  <div id="manageGroup" style="text-align:center; margin-top:1rem;">
+    <a id="manageBtn" class="link-button" href="/static/manage.html" aria-label="管理词库">管理词库</a>
+  </div>
 
   <footer>本地离线运行，无需互联网。</footer>
 </body>
