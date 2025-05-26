@@ -82,6 +82,7 @@ stopBtn.onclick = async () => {
     resBox.hidden        = false;
 
     retryBtn.hidden = nextBtn.hidden = false;
+    document.getElementById("postGroup").hidden = false;   // 让按钮组显示
     startBtn.disabled = false;
   };
 };

@@ -1,21 +1,39 @@
-import os
-import json
+# ---------- 依赖 ---------- #
+import os, sys, json, subprocess, tempfile          # ←★ 新增 subprocess / tempfile
+import numpy as np                                  # ←★ 新增 numpy
+from pathlib import Path
+
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 from flask import Flask, request, jsonify, send_from_directory
-
-import wave, tempfile
-from pydub import AudioSegment  
-from rapidfuzz import fuzz
 from faster_whisper import WhisperModel
-import subprocess
-import sys
-# 使用 CPU 版 base-int8，适合无独显的教室电脑 (≈500 MB，内存占用 <1.5 GB)
+from huggingface_hub import snapshot_download
+
+
+# ---------- 自动下载 / 读取模型 ---------- #
+MODEL_ID = "rhasspy/faster-whisper-base-int8"
+MODEL_DIR = Path(__file__).parent / "models" / MODEL_ID.split("/")[-1]
+
+if not MODEL_DIR.exists():                       # 首次启动才会执行下载
+    try:
+        snapshot_download(
+            repo_id   = MODEL_ID,
+            local_dir = MODEL_DIR,
+            local_dir_use_symlinks=False,        # 真文件，便于拷贝
+            resume_download=True                 # 断点续传
+        )
+    except Exception as e:
+        print(f"[ERROR] 无法下载模型：{e}", file=sys.stderr)
+        sys.exit(1)
+
+# ---------- 加载 Whisper ---------- #
 WHISPER = WhisperModel(
-    "base",               # 500 MB 权重
+    str(MODEL_DIR),
     device="cpu",
-    compute_type="int8"   # 量化推理，速度与占用折中
+    compute_type="int8",                          # 权重是 int8 量化                 
 )
+
+
 
 app = Flask(__name__, static_folder="static")
 
@@ -26,46 +44,45 @@ sample_rate = 16000
 def root():
     return send_from_directory("static", "index.html")
 
+def load_audio(path):
+    cmd = [
+        "ffmpeg", "-loglevel", "error",
+        "-i", path,           # webm 原文件
+        "-ac", "1", "-ar", "16000",  # 单声道 16 kHz
+        "-f", "s16le", "-"          # 原始 PCM 流
+    ]
+    pcm = subprocess.check_output(cmd)
+    return np.frombuffer(pcm, np.int16).astype(np.float32) / 32768.0
+
 @app.route("/api/score", methods=["POST"])
 def api_score():
-    try:
-        # ---------- ① 接收上传的 WebM ----------
-        webm_file = request.files["audio"]
-        ref_word  = request.form["target"]
+    file  = request.files["audio"]
+    grade = request.form.get("grade", "1")
+    tgt   = request.form.get("target", "")
 
-        # ---------- ② 转码为 16 kHz mono WAV ----------
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp_in:
-            webm_file.save(tmp_in.name)
+    # 直接读取 webm bytes 入 ffmpeg
+    with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
+        file.save(tmp.name)
+        audio = load_audio(tmp.name)
+    os.remove(tmp.name)
 
-        SAMPLE_RATE = 16000
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_wav:
-            AudioSegment.from_file(tmp_in.name)\
-                        .set_frame_rate(SAMPLE_RATE)\
-                        .set_channels(1)\
-                        .export(tmp_wav.name, format="wav")
+    # --- Whisper ---
+    segments, _ = WHISPER.transcribe(
+        audio,
+        beam_size=1, best_of=1,
+        vad_filter=True
+    )
+    hyp_text = "".join([s.text.strip() for s in segments])
 
-        # ---------- ③ Whisper 大模型转写 ----------
-        # 返回迭代器，逐段文本
-        segments, _ = WHISPER.transcribe(tmp_wav.name,
-                                         language="zh",
-                                         beam_size=5)
-        hyp_text = "".join(seg.text for seg in segments).replace(" ", "")
+    # --- 计算分数 ---
+    from pypinyin import lazy_pinyin
+    from rapidfuzz.distance import Levenshtein
+    ref = "".join(lazy_pinyin(tgt))
+    hyp = "".join(lazy_pinyin(hyp_text))
+    dist = Levenshtein.distance(ref, hyp)
+    score = max(0, 100 - int(100 * dist / max(len(ref), 1)))
 
-        # ---------- ④ 计算拼音层面的相似度（rapidfuzz.partial_ratio） ----------
-        from pypinyin import lazy_pinyin           # ← 已在文件别处 import 过可略，但重复无害
-
-        rp = ''.join(lazy_pinyin(ref_word.lower()))    # 目标词拼音
-        hp = ''.join(lazy_pinyin(hyp_text.lower()))    # 识别结果拼音
-
-        # partial_ratio 会在较长串里找短串的最佳匹配，返回 0-100
-        score_val = fuzz.partial_ratio(rp, hp)
-
-
-        return jsonify({"transcript": hyp_text or "(未识别)", "score": score_val})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 200
-
+    return jsonify({"score": score})
 
 
 @app.route('/<path:filename>')

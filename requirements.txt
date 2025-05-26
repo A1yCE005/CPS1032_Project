@@ -1,29 +1,25 @@
-# ------------------ requirements.txt (CPU 版) ------------------
-# Flask Web 框架
+# ---- Web & 音频基础 ----
 Flask==3.0.3
+soundfile==0.12.1            # ffmpeg 调用需要
+pydub==0.25.1                # 读写 mp3/ogg
 
-
-# PyTorch CPU 版
-torch==2.2.2
-torchvision==0.17.2
-torchaudio==2.2.2
-
-# 音频解码 (WebM → WAV)
-pydub==0.25.1
-soundfile==0.12.1
-
-# 汉字转拼音 & 相似度计算
-pypinyin==0.48.0
-rapidfuzz==3.6.1
-python-Levenshtein==0.24.0
-# ------------------------------------------------------------
-
-# 文档解析
-python-docx==0.8.11
-
-# 本地 TTS
-pyttsx3==2.90
-numpy==1.26.4
-ctranslate2==4.2.0        # ≥4,<5 皆可，4.2.0 有 win64 轮子
+# ---- 语音识别 (CPU) ----
 faster-whisper==0.10.0
+ctranslate2==4.2.0           # ≥4.0 支持 int8 权重
+huggingface-hub==0.23.3
 
+# 如果你改用 ONNXRuntime 推理
+# onnxruntime==1.17.3  ; sys_platform != 'darwin'
+# onnxruntime-silicon==1.17.3 ; sys_platform == 'darwin'
+
+# ---- 语音合成 (可选) ----
+pyttsx3==2.90                # 离线 TTS；若用 edge-tts / TTS 则删掉它
+# edge-tts==6.1.0           # 微软 online TTS
+
+# ---- 评分算法 ----
+rapidfuzz==3.6.2
+python-Levenshtein==0.24.2
+
+# ---- 其它工具 ----
+openai-whisper @ git+https://github.com/openai/whisper.git@v20230314  # 若偶尔对比
+tqdm==4.66.4

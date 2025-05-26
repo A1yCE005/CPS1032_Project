@@ -1,97 +1,53 @@
-#!/usr/bin/env python3
-# gen_audio.py — 批量为词库生成本地发音文件
-#
-# 使用示例:
-#   pip install pyttsx3
-#   python static/gen_audio.py
-
-import os
-import json
+# ====================== static/gen_audio.py ======================
+import os, json, time
+from pathlib import Path
 import pyttsx3
-from glob import glob
-import platform
+from pydub import AudioSegment
 import subprocess
-import shutil
 
-# 初始化 TTS 引擎（macOS 下使用 say 命令）
-is_mac = platform.system() == "Darwin"
-engine = None
-if not is_mac:
-    try:
-        engine = pyttsx3.init()
-        engine.setProperty('rate', 150)    # 语速，可根据需要调整
-        engine.setProperty('volume', 1.0)  # 音量
-    except Exception as e:
-        print(f"[Warning] pyttsx3 初始化失败: {e}")
-        engine = None
 
-def normalize_word(word: str) -> str:
-    """将词语转换为文件名安全的形式。"""
-    # 只保留合法字符，其他替换为下划线
-    safe = "".join(ch if ch.isalnum() else "_" for ch in word)
-    return safe
+TXT_DIR   = Path(__file__).with_suffix("")          # static/gen_audio
+AUDIO_DIR = TXT_DIR.parent / "audio"                # static/audio
+AUDIO_DIR.mkdir(exist_ok=True)
 
-def gen_for_grade(grade: int):
+engine = pyttsx3.init()        # Windows: SAPI5   Linux: eSpeak
+engine.setProperty("rate", 160)    # 语速可自行调节
+
+def text_to_mp3(text:str, out_mp3:Path):
     """
-    为指定年级的词库生成语音文件。
-    JSON 文件路径: static/words_grade{grade}.json
-    输出目录:     static/audio/grade{grade}/
+    使用 pyttsx3 先生成 WAV，随后用 pydub 保存为 mp3。
+    整个过程不再显式调用 subprocess。
     """
-    json_path = os.path.join(os.path.dirname(__file__), f"words_grade{grade}.json")
-    audio_dir = os.path.join(os.path.dirname(__file__), "audio", f"grade{grade}")
-    os.makedirs(audio_dir, exist_ok=True)
+    tmp_wav = out_mp3.with_suffix(".wav")
 
-    # 读取词库
-    try:
-        with open(json_path, "r", encoding="utf-8") as f:
-            raw = json.load(f)
-    except Exception as e:
-        print(f"[Error] 无法读取 {json_path}: {e}")
-        return
+    # --- TTS 保存 WAV ---
+    engine.save_to_file(text, str(tmp_wav))
+    engine.runAndWait()
 
-    # 逐词生成
-    for entry in raw:
-        word = entry.get("word") if isinstance(entry, dict) else str(entry)
-        if not word:
-            continue
-        safe_name = normalize_word(word)
-        out_file = os.path.join(audio_dir, f"{safe_name}.mp3")
-        if os.path.exists(out_file):
-            # 文件已存在，跳过
-            continue
-        print(f"生成发音: 年级 {grade} → {word} -> {out_file}")
-        if is_mac:
-            # macOS: say 输出为 AIFF，再用 ffmpeg 转为 MP3
-            aiff_file = out_file.replace(".mp3", ".aiff")
-            # 生成 AIFF
-            subprocess.run(["say", "-o", aiff_file, word], check=False)
-            # 将 AIFF 转为 MP3 (16kHz)
-            subprocess.run([
-                "ffmpeg", "-y", "-loglevel", "error",
-                "-i", aiff_file,
-                "-ar", "16000",
-                "-ac", "1",
-                out_file
-            ], check=False)
-            # 删除中间 AIFF 文件
-            try:
-                os.remove(aiff_file)
-            except OSError:
-                pass
-        elif engine:
-            engine.save_to_file(word, out_file)
-        else:
-            print(f"[Error] 无可用 TTS 引擎，跳过 {word}")
+    # --- WAV → MP3 ---
+    wav_audio = AudioSegment.from_wav(tmp_wav)
+    wav_audio.export(out_mp3, format="mp3", bitrate="96k")
 
-    # 执行所有待生成任务
-    if engine:
-        engine.runAndWait()
+    tmp_wav.unlink(missing_ok=True)      # 清理临时文件
 
-def main():
-    # 为所有 1-8 年级执行生成
-    for grade in range(1, 9):
-        gen_for_grade(grade)
-    print("全部语音文件生成完毕。")
+def ensure_grade_audio(grade_json:Path):
+    """检查 gradeX 的 json，把缺失的词语语音补齐"""
+    grade = grade_json.stem.split("grade")[-1]
+    with open(grade_json, "r", encoding="utf-8") as f:
+        words = json.load(f)
+
+    out_dir = AUDIO_DIR / f"grade{grade}"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    for item in words:
+        word = item["word"] if isinstance(item, dict) else item
+        mp3_path = out_dir / f"{word}.mp3"
+        if not mp3_path.exists():
+            print(f" [生成] {grade=} {word=}")
+            text_to_mp3(word, mp3_path)
 
 if __name__ == "__main__":
-    main()
+    # 遍历 static/ 下所有 gradeX.json
+    for j in sorted(Path("static").glob("words_grade*.json")):
+        ensure_grade_audio(j)
+    print("✅ 语音文件全部就绪")
