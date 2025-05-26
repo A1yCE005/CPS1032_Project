@@ -2,8 +2,6 @@
 # Flask Web 框架
 Flask==3.0.3
 
-# Whisper 推理 (faster-whisper)
-faster-whisper==0.10.0
 
 # PyTorch CPU 版
 torch==2.2.2
@@ -25,3 +23,7 @@ python-docx==0.8.11
 
 # 本地 TTS
 pyttsx3==2.90
+numpy==1.26.4
+ctranslate2==4.2.0        # ≥4,<5 皆可，4.2.0 有 win64 轮子
+faster-whisper==0.10.0
+

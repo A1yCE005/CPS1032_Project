@@ -1,9 +1,6 @@
 # Exclude Python virtual environment
 .venv/** export-ignore
 
-# Exclude generated audio files from archives and treat them as binary
-static/audio/** export-ignore
-static/audio/** binary
 
 # Normalize text file EOL
 *.py    text eol=lf
